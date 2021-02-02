@@ -20,58 +20,65 @@ function createElement(tagName, props, ...children) {
   return element;
 }
 
-function calculator(firstNum, secondNum, mark) {
-  if (mark == '+') {
-    return (firstNum + secondNum);
-  } else if (mark == '-') {
-    return (firstNum - secondNum);
-  } else if (mark == '*') {
-    return (firstNum * secondNum);
-  } else if (mark == '/') {
-    return (firstNum / secondNum); 
+const operatorFunctions = {
+  '': (x, y) => y || x,
+  '=': (x, y) => x || y,
+  '+': (x, y) => x + y,
+  '-': (x, y) => x - y,
+  '*': (x, y) => x * y,
+  '/': (x, y) => x / y,
 }
 
-function render(firstNum = 0, secondNum = 0, mark = '') {
-  function handleClick(count) {
-    if (firstNum == 0) {
-      firstNum = firstNum * 10 + count;
-      render(firstNum, secondNum = 0, mark = '');
-    } else {
-      secondNum = secondNum * 10 + count;
-      render(firstNum, secondNum, mark);
-    }
+function calculate(operator, accumulator, number) {
+  return operatorFunctions[operator](accumulator, number);
+}
+
+const initialState = {
+  accumulator: 0,
+  number: 0,
+  operator: '',
+}
+
+function render({ accumulator, number, operator }) {
+  function handleClickReset() {
+    render(initialState);
   }
-  function handleClickMark(mark) {
-    render(firstNum, secondNum, mark);
+  function handleClickNumber(value) {
+    render({ 
+      accumulator,
+      number: number * 10 + value,
+      operator,
+    });
   }
 
-  function print(value) {
-    if (secondNum == 0) {
-      value = firstNum;
-    } else if (mark == '=') {
-      value = calculator(firstNum, secondNum, mark);
-    } else {
-      value = secondNum;
-    } 
-    render(firstNum, secondNum, mark);
-  }  
+  function handleClickOperator(value) {
+    render({ 
+      accumulator: calculate(operator, accumulator, number),
+      number: 0,
+      operator: value,
+    });
+  }
+
   const element = (
     <div>
       <p>간단 계산기</p>
-      <p>{print(value)}</p>
+      <p>{number || accumulator}</p>
       <p>
         {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map(i => (
-          <button type="button" onClick={() => handleClick(i)}>
+          <button type="button" onClick={() => handleClickNumber(i)}>
             {i}
           </button>
         ))}  
       </p>
       <p>
-        {['+', '-', '*', '/', '='].map(i => (
-          <button type="button" onClick={() => handleClickMark(i)}>
-            {i}
+        {['+', '-', '*', '/', '='].map((i) => (
+          <button type="button" onClick={() => handleClickOperator(i)}>
+          {i}
           </button>
-        ))}  
+        ))}
+        <button type="button" onClick={handleClickReset}>
+          Reset
+        </button>
       </p>
     </div>
   );
@@ -80,4 +87,4 @@ function render(firstNum = 0, secondNum = 0, mark = '') {
   document.getElementById('app').appendChild(element);
 }
 
-render();
+render(initialState);
